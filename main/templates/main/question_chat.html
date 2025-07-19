@@ -1,0 +1,285 @@
+{%extends 'base.html' %}
+{%load static%}
+
+
+
+
+{%block content%}
+
+<div class="w-[100%] min-h-[100vh]  flex flex-row  gap-4 justify-center items-center  bg-base-100">
+    <div class="fixed top-[10%] left-0 w-[15%] min-h-[100vh] bg-slate-100 p-5  float-left overflow-y-scroll">
+       <ul>
+        {%for questionaire in questionaires%}
+
+            <li class="mt-2 text-xs"><a className="link link-error text-sm p-2" href="{%url 'question_chat' questionaire.id_tag %}?q=question">{{ questionaire.questions.all|first|truncatewords:4 }}</a></li>
+
+            {%endfor%}
+       </ul>
+        
+        
+    </div>
+
+    <div class="w-[80%] min-h-[100%] flex flex-col  gap-4 justify-center items-center relative ">
+        {%include 'navbar.html'%}
+
+        <div class="w-[60%] min-h-[100%] p-10 pb-20 py-20 text-[15px]" id="log">
+
+
+
+
+
+
+
+
+
+
+        </div>
+
+     
+
+        <div class=" flex-row gap-2 fixed p-4 bottom-0 w-[50%] bg-slate-100 border-none hidden  rounded-lg">
+            <input type="text" placeholder="Hello there! what's your query?" id="chat-input"
+                class="input input-bordered w-[80%] bg-transparent border-none border-black" />
+            <button class="btn btn-active w-[20%]" id="chat-submit">Send</button>
+            {{ generate_id|json_script:"room-name" }}
+        </div>
+
+        <div class=" flex-row gap-2 fixed p-4 bottom-0 w-[50%]  bg-slate-100 border-none  rounded-lg">
+          
+            
+        </div>
+
+
+
+
+
+
+        <!-- <div class="w-[100%] h-[100%] flex flex-col justify-center items-center gap-4">
+        <textarea readonly placeholder="Bio" id="chat-log"
+            class="textarea textarea-bordered textarea-lg w-full max-w-xs "></textarea>
+        <div class="flex flex-row gap-2">
+            <input type="text" placeholder="Type here" id="chat-input" class="input input-bordered w-full max-w-xs" />
+            <button class="btn btn-active" id="chat-submit">Send</button>
+            {{ generate_id|json_script:"room-name" }}
+        </div>
+    </div> -->
+    </div>
+
+    
+    <script>
+        const roomName = JSON.parse(document.getElementById('room-name').textContent);
+        const chat_log = document.getElementById('log');
+        let loading = true;
+        const q='{{q}}';
+        // const chat_end=document.getElementById('chat-end')
+        // console.log(roomName)
+
+        const chatSocket = new WebSocket(
+            'ws://'
+            + window.location.host
+            + '/ws/chat/'
+            + roomName
+            + '/'
+        );
+      
+        chatSocket.onmessage = function (e) {
+            const data = JSON.parse(e.data) ;
+            // print(data)
+            
+            if (data.type=='chat_history'){
+                
+                data.messages.forEach(msg=>{
+                    console.log(msg)
+                   
+                    // const title=response['quizTitle']
+                    
+                    chat_log.innerHTML += ` 
+
+                        <div class="chat chat-end text-wrap">
+                            <div class="chat-bubble"><pre >${msg.question}</pre></div>
+                            </div>
+                        </div>
+
+                        `;
+                        // console.log(JSON.parse(msg.answer).questions)
+
+
+                        
+                    chat_log.innerHTML += `
+                            <div class="chat chat-start">
+
+
+                        <div class="chat-bubble text-wrap">
+                            
+                                ${msg.answer.quiz.map((val,i)=>(
+                                    // console.log(i)
+                                `
+                                   <pre class='text-wrap mt-2'>${val.question}</pre>
+
+
+                                 <ol>
+                                   ${val.options.map((item,i)=>(
+                                    `<li class='text-wrap mt-1 p2-4'>${item}</li>`
+                                   )
+                                   ).join('\n')}
+                                   </ol>
+                              <pre class='text-wrap mt-2'>Answer: ${val.answer}</pre>
+                                   
+                                `)).join('\n')}
+                                
+                                
+                        </div>
+                    </div>
+
+                            `    
+                })
+            }
+
+            // document.querySelector('#chat-log').value += (data.message + '\n');
+            else if(data.type === 'chat_message'){
+                if (data.sent_by === 'user') {
+                chat_log.innerHTML += ` 
+
+                <div class="chat chat-end text-wrap">
+                    <div class="chat-bubble  bg-blue-500  "><pre >${data.message}</pre></div>
+                    </div>
+                </div>
+
+                `
+
+            } 
+            else {
+                // if (data.loading === false) {
+                //     loading = false
+                // } else {
+                //     loading = true
+                // }
+                // console.log(loading)
+
+                // if (loading === false) {
+                console.log(data.message)
+                    chat_log.innerHTML += `
+                            <div class="chat chat-start">
+
+
+                        <div class="chat-bubble text-wrap">
+                            
+                                ${data.message.quiz.map((val,i)=>(
+                                    // console.log(i)
+                                `
+                                   <pre class='text-wrap mt-2'>${val.question}</pre>
+
+
+                                 <ol>
+                                   ${val.options.map((item,i)=>(
+                                    `<li class='text-wrap mt-1 p2-4'>${item}</li>`
+                                   )
+                                   ).join('\n')}
+                                   </ol>
+                              <pre class='text-wrap mt-2'>Answer: ${val.answer}</pre>
+                                   
+                                `)).join('\n')}
+                                
+                        </div>
+                    </div>
+
+                            `
+                // }
+                // else {
+                //     chat_log.innerHTML += `
+                    
+                //     <div class="chat chat-start">
+
+
+                //     <div class="chat-bubble text-wrap">
+                //     <span class="loading loading-ring loading-lg"></span>
+
+                //     </div>
+                // </div>
+                //     `
+                // }
+
+
+            }
+
+            }
+
+       
+        };
+
+        chatSocket.onclose = function (e) {
+            console.error('Chat socket closed unexpectedly');
+        };
+        
+
+
+        document.querySelector('#chat-input').focus();
+        document.querySelector('#chat-input').onkeyup = function (e) {
+            if (e.key === 'Enter') {  // enter, return
+                document.querySelector('#chat-submit').click();
+            }
+        };
+
+        document.querySelector('#chat-submit').onclick = function (e) {
+            const messageInputDom = document.querySelector('#chat-input');
+            const message = messageInputDom.value;
+            // chatSocket.onopen=(event)=>{
+         
+            // }
+            
+
+            chatSocket.send(JSON.stringify({
+                'message': message,
+                'username':'a@gmail.com',
+                'generate_id':'{{generate_id}}'
+            }));
+
+            messageInputDom.value = '';
+            
+            
+        };
+        
+
+        chatSocket.onopen =function(e){
+             
+        }
+
+         window.addEventListener("load",()=>{
+            // console.log('{{question}}')
+          
+
+            if ('{{question}}' !== 'None'){
+                switch ('{{q}}'){
+                case 'lesson':
+                chatSocket.send(JSON.stringify({
+                        'message': 'Generate a lesson plan on {{question}}',
+                        'username':'a@gmail.com',
+                        'generate_id':'{{generate_id}}',
+                        'prompt_type':'lesson'
+                    }));
+                    break
+                case 'question':
+                chatSocket.send(JSON.stringify({
+                        'message': 'Generate {{no_of_questions}}  {{question}} quiz for {{student_class}} students',
+                        'username':'a@gmail.com',
+                        'generate_id':'{{generate_id}}',
+                        'prompt_type':'question'
+                    }));
+                    break
+            }
+            
+            }
+        
+           
+        
+        })
+         
+        
+
+
+
+
+
+    </script>
+
+    {%endblock%}

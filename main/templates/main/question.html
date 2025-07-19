@@ -1,0 +1,52 @@
+{%extends 'base.html' %}
+
+{%block content%}
+
+<div class="w-[100%] h-[100vh]">
+    {%include 'navbar.html'%}
+
+    <div class="w-[100%] h-[100%] flex flex-col justify-center items-center gap-4">
+        <span class="font-bold text-lg" id="intro_text"></span>
+        <form class="flex flex-col gap-5 p-1 py-4 px-2 rounded-lg 
+        justify-center 
+        lg:w-[40%] lg:h-[60%] 
+        md:w-[70%]
+        bg-[#EEEEEE]"
+        
+        method="post"
+        >{%csrf_token%}
+            <input type="text" name="question" placeholder="Enter the topic or description" class="input input-bordered w-[100%] "  />
+            <input type="number" name="number_of_questions" placeholder="Enter number of questions" min="1"  class="input input-bordered w-[100%] p-2">
+            <select class="select select-bordered" name="class">
+                <option disabled selected>Class</option>
+                <option value="jss1">Jss1</option>
+                <option value="jss2">Jss2</option>
+                <option value="jss3">Jss3</option>
+                <option value="sss1">SSS1</option>
+                <option value="sss2">SSS2</option>
+                <option value="sss3">SSS3</option>
+            </select>
+            <button class="btn btn-active" type="submit">Send</button>
+
+        </form>
+    </div>
+</div>
+
+
+<script src="https://unpkg.com/typeit/dist/index.umd.js"></script>
+
+
+<script>
+//     var typed = new Typed('#intro_text', {
+//      strings: 'Welcome to SSBI, all about Education',
+//      typeSpeed: 20,
+//    });
+
+
+   new TypeIt("#intro_text", {
+        strings: "Welcome to SMART ACADEMY, all about Education",
+      }).go();
+</script>
+
+{%endblock%}
+

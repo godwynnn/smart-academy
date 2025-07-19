@@ -1,0 +1,35 @@
+{%extends 'base.html' %}
+
+{%block content%}
+
+<div class="w-[100%] h-[100vh]">
+  {%include 'navbar.html'%}
+    <div class=" flex justify-center items-center w-[100%] h-[100%]  lg:flex-row md:flex-row sm:flex-col max-sm:flex-col  gap-5 ">
+
+        <div class="card bg-neutral text-neutral-content h-[50%] w-[40%]">
+            <div class="card-body items-center text-center">
+                <h2 class="card-title">Lesson Plan</h2>
+                <p>Create a lesson plan</p>
+                <div class="card-actions justify-end">
+                    <a class="btn btn-primary" href="{%url 'lesson_plan' 'lesson' %}">Generate</a>
+                </div>
+            </div>
+
+        </div>
+
+
+        <div class="card bg-neutral text-neutral-content h-[50%] w-[40%]">
+            <div class="card-body items-center text-center">
+              <h2 class="card-title">Questions</h2>
+              <p>Evaluate your students</p>
+              <div class="card-actions justify-end">
+                <a class="btn btn-primary" href="{%url 'question_entry' 'question' %}">Generate</a>
+              </div>
+            </div>
+          </div>
+
+    </div>
+</div>
+
+
+{%endblock%}

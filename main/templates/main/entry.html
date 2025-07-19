@@ -1,0 +1,37 @@
+{%extends 'base.html' %}
+
+{%block content%}
+
+<div class="w-[100%] h-[100vh]">
+    {%include 'navbar.html'%}
+    <div class="w-[100%] h-[100%] flex flex-col justify-center items-center gap-4">
+        <span class="font-bold text-lg" id="intro_text"></span>
+            <form class="flex flex-row gap-2" method="post">{%csrf_token%}
+            <input type="text" name="question" placeholder="Type here" class="input input-bordered w-full max-w-xs" />
+            
+
+            
+            <button class="btn btn-active" type="submit">Send</button>
+
+        </form>
+    </div>
+</div>
+
+
+<script src="https://unpkg.com/typeit/dist/index.umd.js"></script>
+
+
+<script>
+//     var typed = new Typed('#intro_text', {
+//      strings: 'Welcome to SSBI, all about Education',
+//      typeSpeed: 20,
+//    });
+
+
+   new TypeIt("#intro_text", {
+        strings: "Welcome to SSBI, all about Education",
+      }).go();
+</script>
+
+{%endblock%}
+
