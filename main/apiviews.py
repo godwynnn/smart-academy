@@ -123,12 +123,11 @@ class ExportToGoogleFormView(APIView):
         store = file.Storage("token.json")
         print(store)
 
-        # creds = store.get()
-        creds = None
+        creds = store.get()
+        # creds = None
         if not creds or creds.invalid:
             print(True)
             flow = client.flow_from_clientsecrets("client_secret.json", SCOPES)
-            print(flow)
             creds = tools.run_flow(flow, store, flags)
             # print(creds)
 
