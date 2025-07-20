@@ -119,9 +119,9 @@ SIMPLE_JWT = {
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
-with open('client_secret.json') as r:
-     file=r.read()
-     print(file)
+# with open('client_secret.json') as r:
+#      file=r.read()
+#      print(file)
 
 if env('PRODUCTION') == '1':
      DATABASES = {

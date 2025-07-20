@@ -38,17 +38,19 @@ class QuestionsView(APIView):
         q = request.GET.get('q', None)
         paginator = CustomPagination()
             
-        print(request)
+        print(q)
         try:
 
             obj = Questionnaire.objects.filter(user=request.user).order_by('-date_created')
+            
 
             if q is not None:
                 # obj=[data.entry_type == Questionnaire.objects.get(id_tag=q).entry_type
                 #      for data in Questionnaire.objects.all().order_by('-date_created')]
 
                 obj = Questionnaire.objects.filter(user=request.user,
-                    entry_type=q,).order_by('-date_created')
+                    entry_type=q).order_by('-date_created')
+            
 
             result = paginator.paginate_queryset(queryset=obj, request=request)
             serializer = QuestionaireSerializer(result, many=True).data
