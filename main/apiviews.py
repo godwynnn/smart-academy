@@ -121,6 +121,7 @@ class ExportToGoogleFormView(APIView):
         print('OUTSIDE LOOP', quiz_data)
 
         store = file.Storage("token.json")
+        print(store)
 
         # creds = store.get()
         creds = None
