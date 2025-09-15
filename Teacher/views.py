@@ -234,6 +234,7 @@ class CreateEventView(APIView):
     def post(self, request):
         """Create a new event with guests and custom duration"""
         # Example payload from request
+        print(request.data)
         summary = request.data.get("title", "Test Meeting")
         date=request.data.get("date", None)
         start=request.data.get("start", None)
@@ -287,7 +288,8 @@ class CreateEventView(APIView):
 
                 return Response({
                     "id": created_event["id"],
-                    "link": created_event["htmlLink"]
-                })
+                    "link": created_event["htmlLink"],
+                    "scheduled":True
+                },status=status.HTTP_200_OK)
             except HttpError as error:
-                return Response({"error": str(error)}, status=500)
+                return Response({"error": str(error),"scheduled":False}, status=500)
