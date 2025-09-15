@@ -1,0 +1,35 @@
+{%extends 'base.html' %}
+
+{%block content%}
+
+<div class="w-[100%] h-[100vh]">
+  {%include 'navbar.html'%}
+    <div class=" flex justify-center items-center w-[100%] h-[100%]  lg:flex-row md:flex-row sm:flex-col max-sm:flex-col  gap-5 ">
+
+        <div class="card bg-neutral text-neutral-content h-[50%] w-[40%]">
+            <div class="card-body items-center text-center">
+                <p class="card-title text-[50px]">Uncle DOE</p>
+                <p>Learn from of already generated questions developed to make you ready</p>
+                <div class="card-actions justify-end">
+                    <a class="btn btn-primary" href="#">Explore</a>
+                </div>
+            </div>
+
+        </div>
+
+
+        <div class="card bg-neutral text-neutral-content h-[50%] w-[40%]">
+            <div class="card-body items-center text-center">
+              <p class="card-title">Smart Academy</p>
+              <p>Teach and evaluate your students with our AI generated tutorials and quiz</p>
+              <div class="card-actions justify-end">
+                <a class="btn btn-primary" href="{%url 'smart_academy' %}">Explore</a>
+              </div>
+            </div>
+          </div>
+
+    </div>
+</div>
+
+
+{%endblock%}

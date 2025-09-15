@@ -1,0 +1,23 @@
+./env
+.env
+env/
+Env/
+db.sqlite3
+static/
+uploads/
+media/
+products/
+.idea/
+__pycache__/
+client_secret.json
+token.json
+./client_secret.json
+./token.json
+staticfiles/
+staticfiles
+# Ignore Python bytecode files  
+__pycache__/  
+*.pyc  
+
+
+
