@@ -18,7 +18,7 @@ from django.contrib import admin
 from django.urls import path, include,re_path
 from django.conf import settings
 from django.conf.urls.static import static
-
+from oauth2_provider import urls as oauth2_urls
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -28,5 +28,6 @@ urlpatterns = [
     path("student/", include("Student.urls")),
     re_path(r'^oauth/', include('drf_social_oauth2.urls', namespace='drf')),
     path("__reload__/", include("django_browser_reload.urls")),
+    path('o/', include(oauth2_urls)),
     
 ]

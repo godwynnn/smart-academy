@@ -293,3 +293,8 @@ class CreateEventView(APIView):
                 },status=status.HTTP_200_OK)
             except HttpError as error:
                 return Response({"error": str(error),"scheduled":False}, status=500)
+
+
+            except Exception as e:
+                return Response({"error": str(e),"scheduled":False}, status=500)
+
