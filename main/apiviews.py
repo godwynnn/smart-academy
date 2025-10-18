@@ -12,10 +12,11 @@ from .paginator import CustomPagination
 from oauth2client import client, file, tools
 from apiclient import discovery
 import json
-from main.consumers import normalize_quiz_data
+# from main.consumers import normalize_quiz_data
 import re
 from httplib2 import Http
 from rest_framework_simplejwt.authentication import JWTAuthentication
+from .AiUtils import generate_from_prompt
 
 
 class EntryView(APIView):
@@ -28,6 +29,39 @@ class EntryView(APIView):
         return Response({
             'room_name': uuid.uuid4()
         }, status=status.HTTP_200_OK)
+
+
+class CreateQuestionsByAiView(APIView):
+    permission_classes=[IsAuthenticated]
+    authentication_classes=[JWTAuthentication]
+    def post(self, request,id):
+        try:
+            message=request.data.get('message',None)
+            username=request.data.get('username')
+            generate_id=request.data.get('generate_id')
+            prompt_type=request.data.get('prompt_type')
+
+            if message is not None:
+
+                prompt=None
+                if prompt_type == 'question':
+                    prompt=f'Generate {message['no_questions']} {message['subject']}  quiz question for {message['class']} students'
+                else:
+                    prompt=f'Generate a lesson plan on {message['subject']} for {message['class']} students'
+                
+                res,raw_reponse=generate_from_prompt(prompt)
+                Question.objects.create(
+                    user=request.user,
+                    question=str(message['class'] +' '+message['subject']+' '+ prompt_type).strip(),
+                    category=str(prompt_type).strip().lower(),
+                    raw_answer=res
+                )
+
+        except Exception as e:
+            return Response({
+                'error':f"error occured at {e}"
+            }, status=status.HTTP_400_BAD_REQUEST)
+        
 
 
 class QuestionsView(APIView):
@@ -94,7 +128,8 @@ class ExportToGoogleFormView(APIView):
         quiz_data = []
 
         try:
-            json_question = normalize_quiz_data(raw_data=json.loads(cleaned_json))
+            # json_question = normalize_quiz_data(raw_data=json.loads(cleaned_json))
+            json_question = json.loads(cleaned_json)
             print('Parsed JSON:', json_question)
         except json.JSONDecodeError as e:
             print('JSON decode error:', e)
