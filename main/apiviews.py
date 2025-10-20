@@ -19,6 +19,9 @@ from rest_framework_simplejwt.authentication import JWTAuthentication
 from .AiUtils import generate_from_prompt
 
 
+def generated_id():
+    return str(uuid.uuid4())
+
 class EntryView(APIView):
     permission_classes = [IsAuthenticated]
     authentication_classes=[JWTAuthentication]
@@ -31,38 +34,88 @@ class EntryView(APIView):
         }, status=status.HTTP_200_OK)
 
 
+
+
 class CreateQuestionsByAiView(APIView):
     permission_classes=[IsAuthenticated]
     authentication_classes=[JWTAuthentication]
-    def post(self, request,id):
-        try:
+    def post(self, request):
+        # try:
             message=request.data.get('message',None)
             username=request.data.get('username')
-            generate_id=request.data.get('generate_id')
+            # generate_id=request.data.get('generate_id')
             prompt_type=request.data.get('prompt_type')
-
+            print(request.data)
+            
             if message is not None:
+                
 
+                questionaire=Questionnaire.objects.create(
+                    user=request.user,
+                    id_tag=generated_id(),
+                    entry_type=prompt_type
+                )
+                
                 prompt=None
                 if prompt_type == 'question':
                     prompt=f'Generate {message['no_questions']} {message['subject']}  quiz question for {message['class']} students'
                 else:
                     prompt=f'Generate a lesson plan on {message['subject']} for {message['class']} students'
                 
+                
                 res,raw_reponse=generate_from_prompt(prompt)
-                Question.objects.create(
-                    user=request.user,
-                    question=str(message['class'] +' '+message['subject']+' '+ prompt_type).strip(),
-                    category=str(prompt_type).strip().lower(),
-                    raw_answer=res
-                )
+                print(res)
+                for item in res:
+                    question=Question.objects.create(
+                        user=request.user,
+                        question=str(message['class'] +' '+message['subject']+' '+ prompt_type).strip(),
+                        title=item['question'],
+                        answer=item['answer'],
+                        options=item['options'],
+                        category=str(prompt_type).strip().lower(),
+                        raw_answer=res
+                    )
 
+                    questionaire.questions.add(question)
+
+                    questionaire.save()
+                serializer=QuestionaireSerializer(questionaire).data
+                questions=[]
+                for value in serializer['questions']:
+                    questions.append(QuestionSerializer(
+                        Question.objects.get(id=value)
+                        ).data)
+                serializer['questions']=questions
+                return Response({
+                'data': serializer
+            },status=status.HTTP_200_OK)
+
+
+        # except Exception as e:
+        #     return Response({
+        #         'error':f"error occured at {e}"
+        #     }, status=status.HTTP_400_BAD_REQUEST)
+        
+class GetQuestionView(APIView):
+    permission_classes = [IsAuthenticated]
+    authentication_classes=[JWTAuthentication]
+    def get(self,request,id):
+        try:
+            questionaire=Questionnaire.objects.get(id_tag=id)
+            serializer=QuestionaireSerializer(questionaire,many=False).data
+            questions=[]
+            for item in serializer['questions']:
+                questions.append(QuestionSerializer(Question.objects.get(id=item)).data)
+            serializer['questions']=questions
+            return Response({
+                'data':serializer,
+                # 'count':len(data)
+            },status=status.HTTP_200_OK)
+                
         except Exception as e:
             return Response({
                 'error':f"error occured at {e}"
             }, status=status.HTTP_400_BAD_REQUEST)
-        
-
 
 class QuestionsView(APIView):
     permission_classes = [IsAuthenticated]

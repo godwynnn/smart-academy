@@ -106,8 +106,9 @@ class Question(models.Model):
     user = models.ForeignKey(MyUser, on_delete=models.CASCADE,
                              null=True,blank=True,
                                related_name="user_questions")
-    quiz_title=models.TextField(max_length=50000,null=True,blank=True)
+    title=models.CharField(max_length=50000,null=True,blank=True)
     answer=models.TextField(max_length=50000,null=True,blank=True)
+    options=models.JSONField(null=True,blank=True,max_length=999999)
     quiz_answer=models.TextField(max_length=5000,null=True,blank=True)
     raw_answer=models.JSONField(max_length=50000,null=True,blank=True)
 
@@ -123,7 +124,7 @@ class Questionnaire(models.Model):
             ('question','question'),
              ('lesson','lesson')
              )
-    id_tag=models.CharField(max_length=200,null=True,blank=True)
+    id_tag=models.CharField(max_length=10000,null=True,blank=True)
     user = models.ForeignKey(MyUser, on_delete=models.CASCADE,null=True,blank=True, related_name="user_questionaires")
     questions=models.ManyToManyField(Question, related_name='questionaires')
     entry_type=models.CharField(null=True,blank=True,max_length=200,choices=TYPE)

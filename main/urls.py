@@ -6,7 +6,9 @@ from .apiviews import *
 urlpatterns = [
     path('entry/',EntryView.as_view(),name='index'),
      path('questions/',QuestionsView.as_view(),name='questions'),
-    path('export/form/<str:id>/',ExportToGoogleFormView.as_view(),name='export_to_form')
+    path('export/form/<str:id>/',ExportToGoogleFormView.as_view(),name='export_to_form'),
+    path('question/create/',CreateQuestionsByAiView.as_view(),name='create_question'),
+    path('question/<str:id>/',GetQuestionView.as_view(),name='get_question')
 
     # path('smart-academy/',SmartAcademyView,name='smart_academy'),
     # path('<str:entry>-entry/',LessonPlanEntryView,name='lesson_plan'),
