@@ -25,5 +25,17 @@ def generate_from_prompt(prompt):
         data = json.loads(response.text)
 
         return data,response.text
-        
+
+
+def generate_lesson_plan(prompt):
+      
+        response = client.models.generate_content(
+            model="gemini-2.5-flash",
+            contents=prompt,
+            
+        )
+
+        print(response.text)
+
+        return response.text
 

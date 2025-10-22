@@ -16,7 +16,7 @@ import json
 import re
 from httplib2 import Http
 from rest_framework_simplejwt.authentication import JWTAuthentication
-from .AiUtils import generate_from_prompt
+from .AiUtils import generate_from_prompt,generate_lesson_plan
 
 
 def generated_id():
@@ -59,26 +59,37 @@ class CreateQuestionsByAiView(APIView):
                 prompt=None
                 if prompt_type == 'question':
                     prompt=f'Generate {message['no_questions']} {message['subject']}  quiz question for {message['class']} students'
+                    res,raw_reponse=generate_from_prompt(prompt)
+                    for item in res:
+                        question=Question.objects.create(
+                            user=request.user,
+                            question=str(message['class'] +' '+message['subject']+' '+ prompt_type).strip(),
+                            title=item['question'],
+                            answer=item['answer'],
+                            options=item['options'],
+                            category=str(prompt_type).strip().lower(),
+                            raw_answer=res
+                        )
+
+                        questionaire.questions.add(question)
+                
                 else:
                     prompt=f'Generate a lesson plan on {message['subject']} for {message['class']} students'
-                
-                
-                res,raw_reponse=generate_from_prompt(prompt)
-                print(res)
-                for item in res:
+                    res=generate_lesson_plan(prompt)
+                    item=res
+                    print(item)
                     question=Question.objects.create(
                         user=request.user,
                         question=str(message['class'] +' '+message['subject']+' '+ prompt_type).strip(),
-                        title=item['question'],
-                        answer=item['answer'],
-                        options=item['options'],
+                        answer=item,
                         category=str(prompt_type).strip().lower(),
-                        raw_answer=res
                     )
 
                     questionaire.questions.add(question)
+            
+                
 
-                    questionaire.save()
+                questionaire.save()
                 serializer=QuestionaireSerializer(questionaire).data
                 questions=[]
                 for value in serializer['questions']:
@@ -173,19 +184,19 @@ class ExportToGoogleFormView(APIView):
         answer = quiz.questions.all()[0].raw_answer
         q = str(request.GET.get('q')).strip()
 
-        cleaned_json = re.sub(r"```(?:json)?\s*|\s*```", "",
-                            str(answer).replace("**", "").replace("*", ".")).strip()
+        # cleaned_json = re.sub(r"```(?:json)?\s*|\s*```", "",
+        #                     str(answer).replace("**", "").replace("*", ".")).strip()
 
         # # questions_section = quiz.split("**Questions:**")[1].split("**Answers:**")[0].strip()
         # print('JSON ANSWER %s' %(json.loads(cleaned_json)))
-        quiz_data = []
+        # quiz_data = []
 
-        try:
-            # json_question = normalize_quiz_data(raw_data=json.loads(cleaned_json))
-            json_question = json.loads(cleaned_json)
-            print('Parsed JSON:', json_question)
-        except json.JSONDecodeError as e:
-            print('JSON decode error:', e)
+        # try:
+        #     # json_question = normalize_quiz_data(raw_data=json.loads(cleaned_json))
+        #     json_question = json.loads(cleaned_json)
+        #     print('Parsed JSON:', json_question)
+        # except json.JSONDecodeError as e:
+        #     print('JSON decode error:', e)
 
         # try:
         #     json_question = json.loads(answer)
@@ -195,18 +206,18 @@ class ExportToGoogleFormView(APIView):
         #     title=json.loads(answer)
         # print(json_question)
 
-        for i in range(0, len(json_question['quiz'])):
-            questions = {}
-            questions['question'] = json_question['quiz'][i]['question']
+        # for i in range(0, len(json_question['quiz'])):
+        #     questions = {}
+        #     questions['question'] = json_question['quiz'][i]['question']
 
-            questions['option'] = []
-            print(i)
+        #     questions['option'] = []
+        #     print(i)
 
-            for option in json_question['quiz'][i]['options']:
-                questions['option'].append(option)
-            questions['answer'] = json_question['quiz'][i]['answer']
-            quiz_data.append(questions)
-        print('OUTSIDE LOOP', quiz_data)
+        #     for option in json_question['quiz'][i]['options']:
+        #         questions['option'].append(option)
+        #     questions['answer'] = json_question['quiz'][i]['answer']
+        #     quiz_data.append(questions)
+        # print('OUTSIDE LOOP', quiz_data)
 
         store = file.Storage("token.json")
         print(store)
@@ -248,14 +259,14 @@ class ExportToGoogleFormView(APIView):
 
         # Request body to add a multiple-choice question
         requests = []
-        for ques in quiz_data:
+        for ques in quiz.questions.all():
             print('quest ', ques)
 
             obj = {
                 "createItem": {
                     "item": {
                         "title": (
-                            ques['question']
+                            ques.title
                         ),
 
                         "questionItem": {
@@ -264,7 +275,7 @@ class ExportToGoogleFormView(APIView):
                                 "grading": {
                                     "pointValue": 2,
                                     "correctAnswers": {
-                                        "answers": [{"value": ques['answer']}]
+                                        "answers": [{"value": ques.answer}]
                                     },
                                     "whenRight": {"text": "You got it!"},
                                     "whenWrong": {"text": "Sorry, that's wrong"}
@@ -272,10 +283,10 @@ class ExportToGoogleFormView(APIView):
                                 "choiceQuestion": {
                                     "type": "RADIO",
                                     "options": [
-                                        {"value": ques['option'][0]},
-                                        {"value": ques['option'][1]},
-                                        {"value": ques['option'][2]},
-                                        {"value": ques['option'][3]},
+                                        {"value": ques.options[0]},
+                                        {"value": ques.options[1]},
+                                        {"value": ques.options[2]},
+                                        {"value": ques.options[3]},
                                     ],
                                     "shuffle": True,
                                 },
