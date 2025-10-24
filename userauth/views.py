@@ -92,9 +92,10 @@ class SignupView(APIView):
     authentication_classes=[BasicAuthentication]
 
     def post(self, request):
-
+        print(request.data)
         try:
             email = str(request.data.get('email', '')).strip().lower()
+            
             if not email:
                 return Response({'message': 'Email is required', 'status': 'error','status':status.HTTP_400_BAD_REQUEST},
                                 status=status.HTTP_400_BAD_REQUEST)
@@ -103,32 +104,33 @@ class SignupView(APIView):
                 return Response({'message': 'User already exists', 'email_exist': True,'status':status.HTTP_400_BAD_REQUEST},
                                 status=status.HTTP_400_BAD_REQUEST)
             # Serialize and validate user data
-            serializer = UserSerializer(data=request.data)
-            if serializer.is_valid():
-                user = serializer.save(role='user')
-                raw_otp = generate_otp(6)
-                otp_hash = hash_otp(raw_otp)
-                OTP.objects.create(
-                    user=user,
-                    otp_hash=otp_hash,
-                    expires_at=timezone.now() + timezone.timedelta(minutes=5)
-                )
+            else:
+                serializer = UserSerializer(data=request.data)
+                if serializer.is_valid():
+                    user = serializer.save(role='student')
+                    raw_otp = generate_otp(6)
+                    otp_hash = hash_otp(raw_otp)
+                    OTP.objects.create(
+                        user=user,
+                        otp_hash=otp_hash,
+                        expires_at=timezone.now() + timezone.timedelta(minutes=5)
+                    )
 
-                """
-                Email sender
-                """
-                # send_user_message(
-                #     "Your OTP Code",
-                #     f"Your OTP code is {raw_otp}. It will expire in 5 minutes.",
-                #     user
-                # )
-                return Response({
-                    'message': 'User Signup successful',
-                    'otp':raw_otp,
-                    'status': status.HTTP_200_OK,
-                    'data': UserSerializer(user).data
-                }, status=status.HTTP_200_OK)
-            return Response({'message': 'Invalid data', 'errors': serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+                    """
+                    Email sender
+                    """
+                    # send_user_message(
+                    #     "Your OTP Code",
+                    #     f"Your OTP code is {raw_otp}. It will expire in 5 minutes.",
+                    #     user
+                    # )
+                    return Response({
+                        'message': 'User Signup successful',
+                        'otp':raw_otp,
+                        'status': status.HTTP_200_OK,
+                        'data': UserSerializer(user).data
+                    }, status=status.HTTP_200_OK)
+                return Response({'message': 'Invalid data', 'errors': serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
         
         except  DatabaseError as e:
             return Response({
